@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#4f46e5">
+<title>Himoya Yordamchi</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#0f172a;--mut:#64748b;--line:#e2e8f0;--acc:#4f46e5;--acc2:#eef2ff;--btn:#4f46e5;--ok:#16a34a;--warn:#d97706;--bad:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--card:#151b2e;--ink:#e8ecf6;--mut:#94a3b8;--line:#263049;--acc:#a5b4fc;--acc2:#1e2547;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:84px}
+.wrap{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0 0 6px}
+h2{font-size:16px;margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 12px}
+.mut{color:var(--mut);font-size:14px}
+.center{text-align:center}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,textarea,select{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:10px;font:inherit}
+textarea{min-height:90px;resize:vertical}
+button,a.btn{font:inherit;border:0;border-radius:10px;padding:10px 14px;background:var(--btn);color:#fff;cursor:pointer;text-decoration:none;text-align:center;display:inline-block}
+button.sec,a.btn.sec{background:var(--acc2);color:var(--acc)}
+button.del{background:transparent;color:var(--bad);padding:4px 8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.row>*{flex:1;min-width:120px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid button{text-align:left;padding:10px}
+.grid button small{display:block;opacity:.8;font-size:12px}
+.grid button.on{outline:3px solid var(--acc)}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;color:var(--mut);border-radius:0;padding:10px 2px;font-size:12px}
+nav button span{display:block;font-size:20px}
+nav button.on{color:var(--acc);font-weight:600}
+.big{font-size:64px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;margin:6px 0}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stats b{display:block;font-size:22px}
+.q{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line)}
+.q:first-child{border-top:0}
+.q .t{flex:1;cursor:pointer}
+.badge{font-size:12px;border-radius:999px;padding:2px 8px;background:var(--acc2);color:var(--acc);white-space:nowrap}
+.rate{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}
+.rate button{padding:10px 0}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 10px}
+.bar i{display:block;height:100%;background:var(--ok)}
+.ck{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--line)}
+.ck:first-of-type{border-top:0}
+.ck input{width:22px;height:22px;margin-top:2px;flex:none}
+.ck span{flex:1}
+.ck.done span{text-decoration:line-through;color:var(--mut)}
+.q-text{font-size:18px;font-weight:600;margin:4px 0 10px}
+.ans{background:var(--acc2);border-radius:10px;padding:10px;margin-top:8px;white-space:pre-wrap}
+section{display:none}
+section.on{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="home"></section>
+<section id="claude"></section>
+<section id="speech">
+  <div class="card">
+    <h1>Nutq mashqi</h1>
+    <label>Nutq vaqti (daqiqa)</label>
+    <input id="mins" type="number" min="1" max="60">
+    <label>Nutq matni</label>
+    <textarea id="sp" style="min-height:200px" placeholder="Himoya nutqingizni shu yerga yozing yoki Claude'dan olingan nutqni joylang"></textarea>
+    <div class="stats" style="margin-top:10px">
+      <div><b id="wc">0</b><span class="mut">so'z</span></div>
+      <div><b id="est">0:00</b><span class="mut">taxminiy vaqt</span></div>
+      <div><b id="tw">0</b><span class="mut">maqsad so'z</span></div>
+    </div>
+    <p id="estmsg" class="mut"></p>
+  </div>
+  <div class="card">
+    <div class="big ok" id="clk">00:00</div>
+    <p id="clkmsg" class="center mut">Nutqni ovoz chiqarib ayting va taymerni yoqing</p>
+    <div class="row">
+      <button id="tgo">Boshlash</button>
+      <button class="sec" id="trs">Nolga</button>
+    </div>
+  </div>
+</section>
+<section id="qs"></section>
+<section id="plan"></section>
+
+</div>
+
+<nav id="nav">
+  <button data-t="home"><span>🏠</span>Bosh</button>
+  <button data-t="claude"><span>🤖</span>Claude</button>
+  <button data-t="speech"><span>🎤</span>Nutq</button>
+  <button data-t="qs"><span>❓</span>Savol</button>
+  <button data-t="plan"><span>✅</span>Reja</button>
+</nav>
+
+<script>
+(function(){
+const KEY = "himoya_v1";
+const FIELDS = [
+  ["topic","Mavzu","i"],["supervisor","Ilmiy rahbar","i"],
+  ["problem","Tadqiqot muammosi","t"],["goal","Maqsad va vazifalar","t"],
+  ["methods","Usullar / modellar","t"],["data","Ma'lumotlar to'plami","t"],
+  ["results","Asosiy natijalar va metrikalar","t"],["novelty","Ilmiy yangilik","t"],
+  ["practical","Amaliy ahamiyat","t"],["fears","Qo'rqadigan yoki bo'sh joylarim","t"]
+];
+const DEF_CHECKS = [
+  "Dissertatsiya yakuniy matni tayyor va rahbar ko'rib chiqqan",
+  "Antiplagiat tekshiruvidan o'tgan",
+  "Universitet talab qilgan hujjatlar to'plami tayyor",
+  "Slaydlar tayyor (10–14 ta)",
+  "Nutq yozilgan va vaqtga moslangan",
+  "Nutqni kamida 5 marta ovoz chiqarib aytganman",
+  "Kamida 30 ta savolga javob tayyorlaganman",
+  "Kamida 10 ta to'liq /imtihon mashqi qilganman",
+  "Nutqni kamida 1 marta odamlar oldida sinab ko'rganman",
+  "Slaydlar telefon va flesh-xotirada zaxirada",
+  "Himoya joyi, vaqti va yo'l rejasi aniq",
+  "Kiyim tayyor, himoya oldi kechasi yaxshi uxlash rejalashtirilgan"
+];
+const MODES = [
+  ["tahlil","/tahlil","Zaif joylarni topish"],
+  ["nutq","/nutq","Nutq yozdirish"],
+  ["slayd","/slayd","Slayd tuzilmasi"],
+  ["savol","/savol","Savollar banki"],
+  ["imtihon","/imtihon","Komissiya simulyatsiyasi"],
+  ["vaqt","/vaqt","Nutqni vaqtga moslash"],
+  ["ishonch","/ishonch","Hayajonni boshqarish"],
+  ["reja","/reja","Kunlik reja"],
+  ["oxirgi","/oxirgi","Yakuniy tekshiruv"]
+];
+
+function def(){return {profile:{},date:"",minutes:8,speech:"",questions:[],checks:{},custom:[],sessions:0};}
+function load(){try{return Object.assign(def(),JSON.parse(localStorage.getItem(KEY))||{});}catch(e){return def();}}
+let st = load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}}
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+function daysLeft(){
+  if(!st.date) return null;
+  const d = new Date(st.date+"T00:00:00");
+  if(isNaN(d)) return null;
+  const t = new Date(); t.setHours(0,0,0,0);
+  return Math.round((d-t)/864e5);
+}
+function avg(q){return q.s && q.s.length ? q.s.reduce((a,b)=>a+b,0)/q.s.length : 0;}
+function words(s){return (s.trim().match(/\S+/g)||[]).length;}
+function fmt(sec){return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");}
+
+function copy(text, btn){
+  const done = () => {if(btn){const o=btn.textContent;btn.textContent="Nusxalandi ✓";setTimeout(()=>btn.textContent=o,1500);}};
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(done,()=>fallback());
+  } else fallback();
+  function fallback(){
+    const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";
+    document.body.appendChild(ta);ta.select();
+    try{document.execCommand("copy");done();}catch(e){alert("Nusxalab bo'lmadi, matnni qo'lda belgilang");}
+    ta.remove();
+  }
+}
+
+/* ---------- tabs ---------- */
+let tab = "home";
+function show(t){
+  tab = t;
+  document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===t));
+  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+  if(t==="home") renderHome();
+  if(t==="claude") renderClaude();
+  if(t==="qs") renderQs();
+  if(t==="plan") renderPlan();
+  window.scrollTo(0,0);
+}
+$("#nav").addEventListener("click",e=>{const b=e.target.closest("button");if(b)show(b.dataset.t);});
+
+/* ---------- home ---------- */
+function phase(d){
+  if(d===null) return "Himoya sanasini kiriting, shunda bosqichga mos maslahat chiqadi.";
+  if(d<0) return "Kiritilgan sana o'tib ketgan. Sanani yangilang.";
+  if(d===0) return "Bugun himoya kuni. Nutqni bir marta tinch o'qib chiqing, nafas oling va ishonch bilan boring.";
+  if(d===1) return "Ertaga himoya. Faqat yakuniy tekshiruv: hujjatlar, slaydlar zaxirasi, yo'l. Yangi narsa o'rganmang, erta uxlang.";
+  if(d<=7) return "Sayqal bosqichi: nutqni vaqtga moslang, odamlar oldida mashq qiling, har kuni /imtihon va /ishonch.";
+  if(d<=14) return "Savol-javob bosqichi: har kuni 20–30 daqiqa /imtihon, zaif javoblarni qayta mashq qiling.";
+  if(d<=30) return "Nutq va slayd bosqichi: /nutq, /slayd, taymer bilan mashq. Zaif joylarni tuzatishda davom eting.";
+  return "Asosiy bosqich: /tahlil bilan matndagi zaif joylarni toping va tuzating, nutq qoralamasini boshlang.";
+}
+function renderHome(){
+  const d = daysLeft();
+  const qs = st.questions, rated = qs.filter(q=>q.s&&q.s.length);
+  const mean = rated.length ? (rated.reduce((a,q)=>a+avg(q),0)/rated.length).toFixed(1) : "–";
+  const total = DEF_CHECKS.length + st.custom.length;
+  const done = Object.values(st.checks).filter(Boolean).length;
+  $("#home").innerHTML = `
+  <div class="card">
+    <h1>Himoya Yordamchi</h1>
+    <div class="big ${d!==null&&d<=7&&d>=0?"warn":"ok"}">${d===null?"–":(d<0?"0":d)}</div>
+    <div class="center mut">kun qoldi</div>
+    <label>Himoya sanasi</label>
+    <input type="date" id="date" value="${esc(st.date)}">
+    <p class="mut">${esc(phase(d))}</p>
+  </div>
+  <div class="card">
+    <div class="stats">
+      <div><b>${qs.length}</b><span class="mut">savol</span></div>
+      <div><b>${mean}</b><span class="mut">o'rtacha ball (1–5)</span></div>
+      <div><b>${done}/${total}</b><span class="mut">reja</span></div>
+    </div>
+    <p class="mut center" style="margin:10px 0 0">Mashq qilingan javoblar soni: ${st.sessions}</p>
+  </div>
+  <div class="card">
+    <h2>Dissertatsiya ma'lumotlari</h2>
+    <p class="mut">Bu ma'lumotlar Claude'ga yuboriladigan promptlarga avtomatik qo'shiladi. Faqat telefoningizda saqlanadi.</p>
+    ${FIELDS.map(([k,l,ty])=>`<label>${esc(l)}</label>`+(ty==="i"
+      ? `<input data-k="${k}" value="${esc(st.profile[k]||"")}">`
+      : `<textarea data-k="${k}">${esc(st.profile[k]||"")}</textarea>`)).join("")}
+  </div>
+  <div class="card">
+    <h2>Zaxira nusxa</h2>
+    <p class="mut">Brauzer ma'lumotlarini tozalasangiz hammasi o'chadi. Vaqti-vaqti bilan zaxira oling.</p>
+    <div class="row"><button class="sec" id="exp">Zaxirani nusxalash</button></div>
+    <label>Zaxirani tiklash (matnni joylang)</label>
+    <textarea id="imp" placeholder="Oldin nusxalangan matnni shu yerga joylang"></textarea>
+    <div class="row"><button class="sec" id="impb">Tiklash</button></div>
+  </div>`;
+  $("#date").onchange = e => {st.date=e.target.value;save();renderHome();};
+  $("#exp").onclick = e => copy(JSON.stringify(st), e.target);
+  $("#impb").onclick = () => {
+    try{
+      const o = JSON.parse($("#imp").value);
+      if(typeof o!=="object"||!o) throw 0;
+      st = Object.assign(def(),o); save(); renderHome(); alert("Tiklandi");
+    }catch(e){alert("Matn noto'g'ri. To'liq zaxira matnini joylang.");}
+  };
+}
+document.addEventListener("input",e=>{
+  const k = e.target.dataset && e.target.dataset.k;
+  if(k){st.profile[k]=e.target.value;save();}
+});
+
+/* ---------- claude prompts ---------- */
+let mode = "tahlil";
+function profBlock(){
+  const L=[];
+  FIELDS.forEach(([k,l])=>{const v=(st.profile[k]||"").trim();if(v)L.push(l+": "+v);});
+  const d=daysLeft();
+  if(st.date) L.push("Himoya sanasi: "+st.date+(d!==null?" ("+d+" kun qoldi)":""));
+  L.push("Nutq vaqti: "+st.minutes+" daqiqa");
+  return L.join("\n");
+}
+function buildPrompt(m){
+  const b = profBlock(), d = daysLeft();
+  switch(m){
+    case "tahlil": return `/tahlil\n\nProject fayllaridagi dissertatsiya matnimni o'qib chiqing. Zaif joylar, mantiqiy bo'shliqlar, asoslanmagan da'volar va komissiya e'tiroz bildirishi mumkin bo'lgan o'rinlarni ko'rsating. Har biri uchun tuzatish taklif qiling.\n\nMening ma'lumotlarim:\n${b}`;
+    case "nutq": return `/nutq\n\n${st.minutes} daqiqalik himoya nutqini yozing. Daqiqalar bo'yicha taqsimot bering va slaydlarga bog'lang. O'zbek tilida, og'zaki va tabiiy uslubda bo'lsin.\n\nMening ma'lumotlarim:\n${b}`;
+    case "slayd": return `/slayd\n\nHimoya taqdimoti uchun slaydlar tuzilmasini taklif qiling. Har slaydga sarlavha, asosiy xabar, nima ko'rsatilishi (grafik/jadval/sxema) va qisqa izoh bering.\n\nMening ma'lumotlarim:\n${b}`;
+    case "savol": return `/savol\n\nKomissiya bera oladigan savollar bankini tuzing (kamida 25 ta): mavzu, usul va metrika, qiyin/tuzoq savollar, amaliy qo'llash bo'yicha. Har bir qatorni aynan shu ko'rinishda yozing: «Savol || qisqa namunaviy javob». Raqam yoki sarlavha qo'shmang, har savol alohida qatorda bo'lsin.\n\nMening ma'lumotlarim:\n${b}`;
+    case "imtihon": return `/imtihon\n\nMen himoyaga tayyorlanyapman. Komissiya a'zosi rolida bitta-bitta savol bering, javobimni kuting, keyin 10 ballik baho va tahlil bering. Zaif javobimga qo'shimcha savol bering.\n\nMening ma'lumotlarim:\n${b}`;
+    case "vaqt": {
+      const w = words(st.speech);
+      return `/vaqt\n\nQuyidagi nutqni ${st.minutes} daqiqaga moslang (taxminan 120 so'z/daqiqa, ya'ni ~${st.minutes*120} so'z). Hozir ${w} so'z.\n\nNutq matni:\n${st.speech.trim()||"(Bu yerga nutq matnini qo'ying)"}`;
+    }
+    case "ishonch": return `/ishonch\n\nHimoya oldi hayajonni boshqarish bo'yicha amaliy mashqlar bering (nafas, ovoz, tana tili, himoya kuni tartibi).${d!==null?` Himoyagacha ${d} kun qoldi.`:""}`;
+    case "reja": {
+      const all = DEF_CHECKS.map((t,i)=>({k:"d"+i,t})).concat(st.custom.map(c=>({k:"c"+c.id,t:c.t})));
+      const dn = all.filter(x=>st.checks[x.k]).map(x=>x.t), td = all.filter(x=>!st.checks[x.k]).map(x=>x.t);
+      return `/reja\n\n${d!==null?`Himoyagacha ${d} kun qoldi.`:"Himoya sanasi hali aniq emas."} Kunlik tayyorgarlik jadvalini tuzing.\n\nBajarilgan:\n${dn.length?dn.map(x=>"- "+x).join("\n"):"- hali yo'q"}\n\nBajarilmagan:\n${td.length?td.map(x=>"- "+x).join("\n"):"- hammasi bajarilgan"}\n\nMening ma'lumotlarim:\n${b}`;
+    }
+    case "oxirgi": return `/oxirgi\n\nHimoyadan bir kun oldin yakuniy tekshiruv ro'yxatini bering: slaydlar, hujjatlar, nutq, javoblar, kiyim, vaqt.\n\nMening ma'lumotlarim:\n${b}`;
+  }
+  return "";
+}
+function renderClaude(){
+  $("#claude").innerHTML = `
+  <div class="card">
+    <h1>Claude uchun tayyor promptlar</h1>
+    <p class="mut">Rejimni tanlang, promptni nusxalang va Claude'dagi Himoya Agenti Project'iga joylang. Ma'lumotlaringiz avtomatik qo'shiladi.</p>
+    <div class="grid" id="modes">${MODES.map(([k,c,d])=>`<button class="${k===mode?"":"sec"} ${k===mode?"on":""}" data-m="${k}">${c}<small>${d}</small></button>`).join("")}</div>
+  </div>
+  <div class="card">
+    <textarea id="pv" style="min-height:260px" readonly></textarea>
+    <div class="row">
+      <button id="cp">Nusxalash</button>
+      <a class="btn sec" href="https://claude.ai/new" target="_blank" rel="noopener">Claude'ni ochish</a>
+    </div>
+    <p class="mut">Savollar banki (/savol) javobini nusxalab, «Savol» bo'limidagi ommaviy qo'shishga joylang.</p>
+  </div>`;
+  const upd = () => {$("#pv").value = buildPrompt(mode);};
+  upd();
+  $("#modes").onclick = e => {const b=e.target.closest("button");if(!b)return;mode=b.dataset.m;renderClaude();};
+  $("#cp").onclick = e => copy($("#pv").value, e.target);
+}
+
+/* ---------- speech ---------- */
+let elapsed = 0, iv = null, t0 = 0;
+function speechStats(){
+  const w = words(st.speech), est = Math.round(w/120*60), tw = st.minutes*120;
+  $("#wc").textContent = w;
+  $("#est").textContent = fmt(est);
+  $("#tw").textContent = tw;
+  const m = $("#estmsg");
+  if(!w){m.textContent="Nutq matnini yozsangiz, uzunligi baholanadi (taxminan 120 so'z/daqiqa).";m.className="mut";return;}
+  const diff = w - tw;
+  if(diff > tw*0.08){m.textContent=`Nutq taxminan ${diff} so'zga uzun. Qisqartiring yoki Claude'da /vaqt dan foydalaning.`;m.className="bad";}
+  else if(diff < -tw*0.15){m.textContent=`Nutq taxminan ${-diff} so'zga qisqa. Natijalar yoki yangilikni kengaytirishingiz mumkin.`;m.className="warn";}
+  else {m.textContent="Uzunlik maqsadga mos.";m.className="ok";}
+}
+function drawClock(){
+  const sec = Math.floor(elapsed/1000), target = st.minutes*60;
+  const c = $("#clk");
+  c.textContent = fmt(sec);
+  c.className = "big " + (sec>target?"bad":(sec>target-30?"warn":"ok"));
+  const m = $("#clkmsg");
+  if(sec===0&&!iv) m.textContent="Nutqni ovoz chiqarib ayting va taymerni yoqing";
+  else if(sec>target) m.textContent=`Vaqtdan ${fmt(sec-target)} oshdi`;
+  else m.textContent=`Qoldi: ${fmt(target-sec)}`;
+}
+function initSpeech(){
+  $("#mins").value = st.minutes;
+  $("#sp").value = st.speech;
+  $("#mins").oninput = e => {const v=parseInt(e.target.value,10);if(v>0&&v<=60){st.minutes=v;save();speechStats();drawClock();}};
+  $("#sp").oninput = e => {st.speech=e.target.value;save();speechStats();};
+  $("#tgo").onclick = () => {
+    if(iv){clearInterval(iv);iv=null;$("#tgo").textContent="Davom etish";drawClock();return;}
+    t0 = Date.now()-elapsed;
+    iv = setInterval(()=>{elapsed=Date.now()-t0;drawClock();},250);
+    $("#tgo").textContent="To'xtatish";
+  };
+  $("#trs").onclick = () => {clearInterval(iv);iv=null;elapsed=0;$("#tgo").textContent="Boshlash";drawClock();};
+  speechStats(); drawClock();
+}
+
+/* ---------- questions ---------- */
+let cur = null, shown = false;
+function pick(){
+  const qs = st.questions;
+  if(!qs.length) return null;
+  let arr = qs.filter(q=>q.id!==cur);
+  if(!arr.length) arr = qs.slice();
+  arr.sort((a,b)=>avg(a)-avg(b)||((a.s||[]).length-(b.s||[]).length));
+  const top = arr.slice(0,Math.min(3,arr.length));
+  return top[Math.floor(Math.random()*top.length)].id;
+}
+function parseBulk(text){
+  const out = [];
+  text.split(/\r?\n/).forEach(line=>{
+    let l = line.replace(/^\s*(\d+[\.\)]|[-*•])\s*/,"").trim();
+    if(l.length<5) return;
+    const parts = l.split("||");
+    const q = parts[0].trim().replace(/^\*+|\*+$/g,"");
+    const a = (parts[1]||"").trim();
+    if(q.length>=5) out.push({id:uid(),q,a,s:[]});
+  });
+  return out;
+}
+function renderQs(){
+  if(!cur || !st.questions.find(q=>q.id===cur)) cur = pick();
+  const cq = st.questions.find(q=>q.id===cur);
+  const sorted = st.questions.slice().sort((a,b)=>avg(a)-avg(b));
+  $("#qs").innerHTML = `
+  <div class="card">
+    <h1>Savol-javob mashqi</h1>
+    ${cq ? `
+      <div class="q-text">${esc(cq.q)}</div>
+      <p class="mut">Javobni ovoz chiqarib ayting, keyin tekshiring.</p>
+      ${shown ? `<div class="ans">${cq.a?esc(cq.a):"Javob yozilmagan. Ro'yxatdan savolni bosib, namunaviy javob qo'shishingiz mumkin."}</div>
+        <p class="mut" style="margin-top:12px">Javobingiz qanchalik yaxshi bo'ldi?</p>
+        <div class="rate">${[1,2,3,4,5].map(n=>`<button class="${n<3?"sec":""}" data-r="${n}">${n}</button>`).join("")}</div>
+        <p class="mut">1 = bilmadim, 5 = a'lo</p>`
+      : `<div class="row"><button id="rv">Javobni ko'rsatish</button><button class="sec" id="sk">Keyingisi</button></div>`}
+    ` : `<p class="mut">Hali savol yo'q. Quyida qo'shing yoki Claude'dagi /savol natijasini ommaviy joylang.</p>`}
+  </div>
+  <div class="card">
+    <h2>Savol qo'shish</h2>
+    <input id="nq" placeholder="Savol">
+    <label>Namunaviy javob (ixtiyoriy)</label>
+    <textarea id="na"></textarea>
+    <div class="row"><button id="addq">Qo'shish</button></div>
+  </div>
+  <div class="card">
+    <h2>Ommaviy qo'shish</h2>
+    <p class="mut">Har qatorda bitta savol. Javob bo'lsa «Savol || Javob» ko'rinishida.</p>
+    <textarea id="bulk" style="min-height:120px"></textarea>
+    <div class="row"><button class="sec" id="bulkb">Qo'shish</button></div>
+  </div>
+  <div class="card">
+    <h2>Barcha savollar (${st.questions.length})</h2>
+    <p class="mut">Zaif javoblar tepada. Savol matnini bosib, javobini tahrirlang.</p>
+    ${sorted.map(q=>`<div class="q"><div class="t" data-e="${q.id}">${esc(q.q)}${q.a?"":' <span class="mut">(javobsiz)</span>'}</div><span class="badge">${q.s&&q.s.length?avg(q).toFixed(1):"–"}</span><button class="del" data-d="${q.id}">✕</button></div>`).join("")||'<p class="mut">Ro\'yxat bo\'sh</p>'}
+  </div>`;
+  const rv=$("#rv"); if(rv) rv.onclick=()=>{shown=true;renderQs();};
+  const sk=$("#sk"); if(sk) sk.onclick=()=>{cur=pick();shown=false;renderQs();};
+  document.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{
+    const q=st.questions.find(x=>x.id===cur);
+    if(q){q.s=(q.s||[]).concat(+b.dataset.r).slice(-20);st.sessions++;save();}
+    cur=pick();shown=false;renderQs();
+  });
+  $("#addq").onclick = () => {
+    const q=$("#nq").value.trim(); if(q.length<3) return;
+    st.questions.push({id:uid(),q,a:$("#na").value.trim(),s:[]}); save(); cur=null; renderQs();
+  };
+  $("#bulkb").onclick = () => {
+    const arr=parseBulk($("#bulk").value);
+    if(!arr.length){alert("Savol topilmadi");return;}
+    st.questions=st.questions.concat(arr); save(); cur=null; renderQs();
+  };
+  document.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{
+    if(!confirm("Savol o'chirilsinmi?")) return;
+    st.questions=st.questions.filter(x=>x.id!==b.dataset.d); save(); renderQs();
+  });
+  document.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{
+    const q=st.questions.find(x=>x.id===b.dataset.e); if(!q) return;
+    const a=prompt("Namunaviy javob:",q.a||"");
+    if(a!==null){q.a=a.trim();save();renderQs();}
+  });
+}
+
+/* ---------- plan ---------- */
+function renderPlan(){
+  const items = DEF_CHECKS.map((t,i)=>({k:"d"+i,t})).concat(st.custom.map(c=>({k:"c"+c.id,t:c.t,c:c.id})));
+  const done = items.filter(x=>st.checks[x.k]).length;
+  const d = daysLeft();
+  $("#plan").innerHTML = `
+  <div class="card">
+    <h1>Tayyorgarlik rejasi</h1>
+    <p class="mut">${esc(phase(d))}</p>
+    <div class="bar"><i style="width:${items.length?Math.round(done/items.length*100):0}%"></i></div>
+    <p class="mut">${done} / ${items.length} bajarildi</p>
+    ${items.map(x=>`<label class="ck ${st.checks[x.k]?"done":""}" style="margin:0;color:inherit;font-size:16px">
+      <input type="checkbox" data-c="${x.k}" ${st.checks[x.k]?"checked":""}><span>${esc(x.t)}</span>
+      ${x.c?`<button class="del" type="button" data-x="${x.c}">✕</button>`:""}</label>`).join("")}
+  </div>
+  <div class="card">
+    <h2>O'z bandingizni qo'shing</h2>
+    <input id="nc" placeholder="Masalan: Taqrizchiga slaydlarni yuborish">
+    <div class="row"><button id="addc">Qo'shish</button></div>
+  </div>`;
+  document.querySelectorAll("[data-c]").forEach(i=>i.onchange=()=>{st.checks[i.dataset.c]=i.checked;save();renderPlan();});
+  document.querySelectorAll("[data-x]").forEach(b=>b.onclick=e=>{
+    e.preventDefault();
+    st.custom=st.custom.filter(c=>c.id!==b.dataset.x);delete st.checks["c"+b.dataset.x];save();renderPlan();
+  });
+  $("#addc").onclick = () => {
+    const t=$("#nc").value.trim(); if(!t) return;
+    st.custom.push({id:uid(),t}); save(); renderPlan();
+  };
+}
+
+initSpeech();
+show("home");
+if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+})();
+</script>
+</body>
+</html>
